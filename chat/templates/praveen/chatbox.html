@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbox</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            
+        }
+        #messages {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            height: 300px;
+            overflow-y: scroll;
+        }
+        input {
+            margin: 5px 0;
+            padding: 10px;
+            width: calc(100% - 24px);
+        }
+        button {
+            padding: 10px 20px;
+        }
+    </style>
+    <script>
+        // Fetch all messages
+        async function fetchMessages() {
+            const response = await fetch('/chat/get_messages/');
+            const data = await response.json();
+            const messagesContainer = document.getElementById('messages');
+            messagesContainer.innerHTML = '';
+            data.messages.reverse().forEach(msg => {
+                const message = document.createElement('div');
+                message.textContent = '${msg.username}: ${msg.text}';
+                messagesContainer.appendChild(message);
+            });
+        }
+
+        // Send a message
+        async function sendMessage() {
+            const username = document.getElementById('username').value;
+            const text = document.getElementById('message').value;
+
+            await fetch('/chat/send_message/', {
+                method: 'POST',
+                body: JSON.stringify({ username, text }),
+                headers: { 'Content-Type': 'application/json' },
+            });
+
+            document.getElementById('message').value = '';  // Clear message input
+            fetchMessages();  // Refresh chat
+        }
+
+        // Fetch messages every 2 seconds
+        setInterval(fetchMessages, 2000);
+    </script>
+</head>
+<body onload="fetchMessages()">
+    <h1>Chatbox</h1>
+    <div id="messages"></div>
+    <input id="username" placeholder="Enter your username" />
+    <input id="message" placeholder="Type your message here" />
+    <button onclick="sendMessage()">Send</button>
+</body>
+</html>
